@@ -39,6 +39,7 @@ document.body.insertAdjacentHTML("afterbegin", `
   <div class="toggles">
     <button class="tog" id="tShuffle"><span class="box"></span>シャッフル</button>
     <button class="tog" id="tReverse"><span class="box"></span>答え → 問題</button>
+    <button class="tog" id="tRuby"><span class="box"></span>ふりがな</button>
   </div>
 
   <div class="label">単元</div>
@@ -66,7 +67,7 @@ document.body.insertAdjacentHTML("afterbegin", `
       <div class="face front">
         <div class="tag"><span id="fDeck"></span><span class="st" id="fSt"></span></div>
         <div class="main"><div class="q" id="fQ"></div></div>
-        <div class="hint">タップして答えを見る</div>
+        <div class="hint">タップでめくる ／ めくらずに ✕△○ を押してもOK</div>
       </div>
       <div class="face backside">
         <div class="tag"><span id="bDeck"></span><span class="st" id="bSt"></span></div>
@@ -80,12 +81,16 @@ document.body.insertAdjacentHTML("afterbegin", `
     </div>
   </div>
 
-  <div class="answers locked" id="answers">
-    <button class="ng" data-r="ng"><span class="ic">✕</span>間違えた<small>もう一度出る</small></button>
-    <button class="mid" data-r="mid"><span class="ic">△</span>まだ不安<small>覚えてない</small></button>
-    <button class="ok" data-r="ok"><span class="ic">○</span>覚えた<small>完璧！</small></button>
+  <div class="answers" id="answers">
+    <button class="ng" data-r="ng"><span class="ic">✕</span>間違えた</button>
+    <button class="mid" data-r="mid"><span class="ic">△</span>まだ不安</button>
+    <button class="ok" data-r="ok"><span class="ic">○</span>覚えた</button>
   </div>
-  <div class="kbd">スペース：めくる ／ 1：間違えた ／ 2：まだ不安 ／ 3：覚えた</div>
+  <div class="navrow">
+    <button id="prevBtn">‹ 前へ</button>
+    <button id="nextBtn">次へ ›</button>
+  </div>
+  <div class="kbd">スペース：めくる ／ 1・2・3：✕△○ ／ ← →：前へ・次へ</div>
 </main>
 
 <!-- ============ DONE ============ -->
@@ -98,8 +103,10 @@ document.body.insertAdjacentHTML("afterbegin", `
       <div><b style="color:var(--mid)" id="dMid">0</b><span>△ まだ不安</span></div>
       <div><b style="color:var(--red)" id="dNg">0</b><span>✕ 間違えた</span></div>
     </div>
-    <button class="btn primary" id="retry">△と✕のカードをもう一度</button>
+    <button class="btn primary" id="retryBoth"></button>
+    <button class="btn primary ghost" id="retryNg"></button>
     <button class="btn" id="toHome">単元一覧へ戻る</button>
+    <button class="linkbtn" id="backLast">‹ 最後のカードに戻る</button>
   </div>
 </main>
 
@@ -186,15 +193,15 @@ function saveProgress() {
 }
 const prog = id => P[id] || { s: 0, c: 0, w: 0 };
 
-let S = { mode: "all", shuffle: true, reverse: false };
+let S = { mode: "all", shuffle: true, reverse: false, ruby: true };
 function loadSettings() {
   const v = getCookie(SET_COOKIE);
   if (!v) return;
-  const [m, sh, rv] = v.split("-");
+  const [m, sh, rv, rb] = v.split("-");
   if (["all", "todo", "wrong"].includes(m)) S.mode = m;
-  S.shuffle = sh === "1"; S.reverse = rv === "1";
+  S.shuffle = sh === "1"; S.reverse = rv === "1"; S.ruby = rb !== "0";
 }
-function saveSettings() { setCookie(SET_COOKIE, `${S.mode}-${S.shuffle ? 1 : 0}-${S.reverse ? 1 : 0}`); }
+function saveSettings() { setCookie(SET_COOKIE, `${S.mode}-${S.shuffle ? 1 : 0}-${S.reverse ? 1 : 0}-${S.ruby ? 1 : 0}`); }
 
 /* ========================================================= */
 const $ = id => document.getElementById(id);
@@ -209,7 +216,35 @@ function toast(msg) {
   clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 1800);
 }
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
-function fmtQ(q) { return esc(q).replace(/〔〕/g, '<span class="blank">？</span>'); }
+/* ふりがな：データ中の {用語|よみ} を <ruby> にする。
+   問題文中の用語（3文字以上）には、答えに付けたよみを自動で付ける（漢字の読みデッキは除く） */
+const RUBY_RE = /\{([^|{}]+)\|([^{}]+)\}/g;
+const plain = s => String(s).replace(RUBY_RE, "$1");
+const DICT = (() => {
+  const m = new Map();
+  for (const c of CARDS) {
+    if (deckOf(c.d).kanji) continue;
+    for (const [, b, r] of String(c.a).matchAll(RUBY_RE)) if (b.length >= 3 && !m.has(b)) m.set(b, r);
+  }
+  return [...m].sort((a, b) => b[0].length - a[0].length);
+})();
+function autoRuby(text) {
+  if (text.includes("{")) return text;
+  const tokens = [];
+  for (const [b, r] of DICT) {
+    if (!text.includes(b)) continue;
+    text = text.split(b).join(`\u0000${tokens.length}\u0000`);
+    tokens.push(`{${b}|${r}}`);
+  }
+  return text.replace(/\u0000(\d+)\u0000/g, (_, i) => tokens[i]);
+}
+function fmt(text, deck) { // deck を渡すと問題文として扱う
+  let t = String(text);
+  if (deck && !deck.kanji) t = autoRuby(t);
+  return esc(t)
+    .replace(RUBY_RE, (_, b, r) => `<ruby>${b}<rt>${r}</rt></ruby>`)
+    .replace(/〔〕/g, '<span class="blank">？</span>');
+}
 
 function counts(cards) {
   let k = 0, m = 0;
@@ -234,6 +269,8 @@ function renderHome() {
   document.querySelectorAll("#modeSeg button").forEach(b => b.classList.toggle("on", b.dataset.mode === S.mode));
   $("tShuffle").classList.toggle("on", S.shuffle);
   $("tReverse").classList.toggle("on", S.reverse);
+  $("tRuby").classList.toggle("on", S.ruby);
+  document.body.classList.toggle("noruby", !S.ruby);
 
   const allN = filterCards(CARDS).length;
   $("allCount").textContent = `${allN}枚`;
@@ -257,10 +294,13 @@ function renderHome() {
 document.querySelectorAll("#modeSeg button").forEach(b => b.onclick = () => { S.mode = b.dataset.mode; saveSettings(); renderHome(); });
 $("tShuffle").onclick = () => { S.shuffle = !S.shuffle; saveSettings(); renderHome(); };
 $("tReverse").onclick = () => { S.reverse = !S.reverse; saveSettings(); renderHome(); };
+$("tRuby").onclick = () => { S.ruby = !S.ruby; saveSettings(); renderHome(); };
 $("startAll").onclick = () => startSession(CARDS, "全単元");
 
-/* ---------- STUDY ---------- */
-let Q = [], qi = 0, title = "", tally = {}, flipped = false, again = [];
+/* ---------- STUDY ----------
+   1周で終了。res[i] = その回の i 枚目の回答（null=未回答）。
+   同じカードに答え直したときは snap[i]（最初に答える前の記録）に戻してから反映する */
+let Q = [], qi = 0, title = "", res = [], snap = [], flipped = false;
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
 function startSession(cards, name, raw = false) {
@@ -268,7 +308,8 @@ function startSession(cards, name, raw = false) {
   if (!list.length) return toast("出題するカードがありません");
   if (S.mode === "wrong" && !raw) list.sort((a, b) => prog(b.id).w - prog(a.id).w);
   if (S.shuffle) shuffle(list);
-  Q = list; qi = 0; title = name; tally = { ok: 0, mid: 0, ng: 0 }; again = [];
+  Q = list; qi = 0; title = name;
+  res = new Array(Q.length).fill(null); snap = new Array(Q.length).fill(null);
   show("study"); renderCard();
 }
 function renderCard() {
@@ -276,7 +317,6 @@ function renderCard() {
   flipped = false;
   const fl = $("flip");
   fl.style.transition = "none"; fl.classList.remove("turned"); void fl.offsetWidth; fl.style.transition = "";
-  $("answers").classList.add("locked");
 
   $("sTitle").textContent = title;
   $("sPos").textContent = `${qi + 1} / ${Q.length}`;
@@ -285,52 +325,71 @@ function renderCard() {
     $(k + "Deck").textContent = d.name;
     const st = $(k + "St"); st.className = "st s" + p.s; st.textContent = ST_LABEL[p.s];
   }
-  const isKanji = !!d.kanji;
-  const front = S.reverse ? esc(c.a) : fmtQ(c.q);
-  const back = S.reverse ? fmtQ(c.q) : esc(c.a);
+  const qHTML = fmt(c.q, d), aHTML = fmt(c.a);
   const fq = $("fQ");
-  fq.innerHTML = front;
-  fq.className = "q" + (isKanji && !S.reverse ? " kanji" : "");
-  $("bQ").innerHTML = S.reverse ? esc(c.a) : fmtQ(c.q);
+  fq.innerHTML = S.reverse ? aHTML : qHTML;
+  fq.className = "q" + (d.kanji && !S.reverse ? " kanji" : "");
+  $("bQ").innerHTML = S.reverse ? aHTML : qHTML;
   const ba = $("bA");
-  ba.innerHTML = back;
-  ba.className = "a" + ((S.reverse ? c.q : c.a).length > 22 ? " small" : "");
+  ba.innerHTML = S.reverse ? qHTML : aHTML;
+  ba.className = "a" + (plain(S.reverse ? c.q : c.a).length > 22 ? " small" : "");
   $("bN").textContent = c.n || "";
   $("bN").classList.toggle("hidden", !c.n);
   $("bW").textContent = p.w; $("bC").textContent = p.c;
+  document.querySelectorAll("#answers button").forEach(b => b.classList.toggle("chosen", b.dataset.r === res[qi]));
+  $("prevBtn").disabled = qi === 0;
+  $("nextBtn").textContent = qi === Q.length - 1 ? "終わる ›" : "次へ ›";
 }
 function flip() {
   flipped = !flipped;
   $("flip").classList.toggle("turned", flipped);
-  if (flipped) $("answers").classList.remove("locked");
 }
 $("flip").onclick = flip;
 
 function answer(r) {
-  if (!flipped) return;
-  const c = Q[qi], p = { ...prog(c.id) };
+  const c = Q[qi];
+  if (res[qi]) { // 答え直し：この周で付けた分を取り消す
+    if (snap[qi]) P[c.id] = { ...snap[qi] }; else delete P[c.id];
+  } else {
+    snap[qi] = P[c.id] ? { ...P[c.id] } : null;
+  }
+  const p = { ...prog(c.id) };
   if (r === "ok") { p.s = 2; p.c++; }
   else if (r === "mid") { p.s = 1; }
   else { p.s = 1; p.w++; }
   P[c.id] = p; saveProgress();
-  tally[r]++;
-  if (r !== "ok") again.push(c);
-  if (r === "ng" && Q.length - qi > 1) Q.push(c); // 間違えたら最後にもう一度
-  qi++;
-  if (qi >= Q.length) finish(); else renderCard();
+  res[qi] = r;
+  go(1);
+}
+function go(delta) {
+  const n = qi + delta;
+  if (n < 0) return;
+  if (n >= Q.length) return finish();
+  qi = n; renderCard();
 }
 document.querySelectorAll("#answers button").forEach(b => b.onclick = e => { e.stopPropagation(); answer(b.dataset.r); });
+$("prevBtn").onclick = () => go(-1);
+$("nextBtn").onclick = () => go(1);
 
 function finish() {
+  const cnt = { ok: 0, mid: 0, ng: 0 };
+  res.forEach(r => r && cnt[r]++);
+  const answered = cnt.ok + cnt.mid + cnt.ng, skipped = Q.length - answered;
   $("sProg").style.width = "100%";
-  $("dOk").textContent = tally.ok; $("dMid").textContent = tally.mid; $("dNg").textContent = tally.ng;
-  $("dSub").textContent = `${title}・${tally.ok + tally.mid + tally.ng}回回答`;
-  const uniq = [...new Map(again.map(c => [c.id, c])).values()].filter(c => prog(c.id).s !== 2);
-  $("retry").classList.toggle("hidden", !uniq.length);
-  $("retry").textContent = `△と✕のカードをもう一度（${uniq.length}枚）`;
-  $("retry").onclick = () => startSession(uniq, title + "（復習）", true);
+  $("dOk").textContent = cnt.ok; $("dMid").textContent = cnt.mid; $("dNg").textContent = cnt.ng;
+  $("dSub").textContent = `${title}・${Q.length}枚を1周` + (skipped ? `（${skipped}枚は未回答）` : "");
+  const both = Q.filter((c, i) => res[i] === "ng" || res[i] === "mid");
+  const ng = Q.filter((c, i) => res[i] === "ng");
+  const base = title.replace(/（もう一周.*$/, "");
+  $("retryBoth").classList.toggle("hidden", !both.length);
+  $("retryBoth").textContent = `✕と△だけもう一周（${both.length}枚）`;
+  $("retryBoth").onclick = () => startSession(both, base + "（もう一周：✕△）", true);
+  $("retryNg").classList.toggle("hidden", !ng.length || ng.length === both.length);
+  $("retryNg").textContent = `✕だけもう一周（${ng.length}枚）`;
+  $("retryNg").onclick = () => startSession(ng, base + "（もう一周：✕）", true);
   show("done");
 }
+$("backLast").onclick = () => { qi = Q.length - 1; show("study"); renderCard(); };
 $("quit").onclick = () => { renderHome(); show("home"); };
 $("toHome").onclick = () => { renderHome(); show("home"); };
 
@@ -340,6 +399,8 @@ document.addEventListener("keydown", e => {
   else if (e.key === "1") answer("ng");
   else if (e.key === "2") answer("mid");
   else if (e.key === "3") answer("ok");
+  else if (e.key === "ArrowLeft") go(-1);
+  else if (e.key === "ArrowRight") go(1);
   else if (e.key === "Escape") { renderHome(); show("home"); }
 });
 
@@ -353,7 +414,7 @@ function renderStats() {
   $("list").innerHTML = list.map(c => {
     const p = prog(c.id);
     return `<div class="item"><span class="st s${p.s}">${ST_LABEL[p.s]}</span>
-      <div><div class="qq">${fmtQ(c.q)}</div><div class="aa">${esc(c.a)}</div></div>
+      <div><div class="qq">${fmt(c.q, deckOf(c.d))}</div><div class="aa">${fmt(c.a)}</div></div>
       <div class="cc"><span class="w">✕${p.w}</span><br>○${p.c}</div></div>`;
   }).join("");
 }
