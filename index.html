@@ -4,520 +4,70 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#f5f1e8">
-<title>憲法フラッシュカード｜公民</title>
+<title>フラッシュカード｜教科をえらぶ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 <style>
-:root{
-  --paper:#f5f1e8; --card:#fffdf8; --ink:#1e2230; --sub:#6b6a66; --line:#e3ddcf;
-  --red:#cc3127; --red-soft:#fbe9e6;
-  --ok:#2e8a57; --ok-soft:#e3f2e9;
-  --mid:#c98a12; --mid-soft:#fbf1dc;
-  --new:#b8b2a4;
-  --shadow:0 1px 2px rgba(30,34,48,.06),0 6px 20px rgba(30,34,48,.07);
-  --radius:16px;
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--paper);color:var(--ink);
-  font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
-  font-size:16px;line-height:1.6}
-body{min-height:100dvh}
-button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
-.wrap{max-width:560px;margin:0 auto;padding:20px 16px calc(28px + env(safe-area-inset-bottom))}
-.hidden{display:none!important}
-
-/* ---------- header ---------- */
-.top h1{font-family:"Zen Old Mincho",serif;font-size:26px;margin:4px 0 2px;letter-spacing:.04em}
-.top h1 em{font-style:normal;color:var(--red)}
-.top p{margin:0;color:var(--sub);font-size:13px}
-.overall{margin:18px 0 6px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
-.overall .nums{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
-.overall .big{font-size:30px;font-weight:700;letter-spacing:.02em}
-.overall .big small{font-size:14px;color:var(--sub);font-weight:500;margin-left:4px}
-.legend{display:flex;gap:12px;font-size:12px;color:var(--sub)}
-.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:1px}
-.bar{display:flex;height:8px;border-radius:99px;overflow:hidden;background:#ece6d8}
-.bar span{display:block;height:100%;transition:width .4s}
-.bar .k{background:var(--ok)} .bar .m{background:var(--mid)}
-
-/* ---------- options ---------- */
-.label{font-size:12px;color:var(--sub);margin:20px 2px 8px;letter-spacing:.08em}
-.seg{display:flex;background:#ebe5d7;border-radius:12px;padding:3px}
-.seg button{flex:1;padding:8px 4px;border-radius:9px;font-size:13px;color:var(--sub);font-weight:500}
-.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
-.toggles{display:flex;gap:8px;margin-top:8px}
-.tog{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:10px;border:1.5px solid var(--line);font-size:13px;color:var(--sub);background:var(--card)}
-.tog.on{border-color:var(--ink);color:var(--ink);font-weight:700}
-.tog .box{width:14px;height:14px;border-radius:4px;border:1.5px solid currentColor;display:inline-grid;place-items:center;font-size:10px}
-.tog.on .box::after{content:"✓"}
-
-/* ---------- decks ---------- */
-.all-btn{width:100%;margin-top:4px;padding:15px;border-radius:14px;background:var(--ink);color:#fff;font-weight:700;font-size:16px;letter-spacing:.05em;box-shadow:var(--shadow)}
-.all-btn small{font-weight:400;opacity:.7;margin-left:6px;font-size:12px}
-.decks{display:grid;gap:10px;margin-top:10px}
-.deck{display:block;width:100%;text-align:left;background:var(--card);border-radius:14px;padding:13px 14px 12px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-.deck::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);opacity:.85}
-.deck .sub{font-size:11px;color:var(--sub);letter-spacing:.04em}
-.deck .name{font-weight:700;font-size:16px;margin:1px 0 8px}
-.deck .row{display:flex;align-items:center;gap:10px}
-.deck .bar{flex:1;height:6px}
-.deck .cnt{font-size:12px;color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums}
-.deck .empty{font-size:12px;color:var(--red);margin-top:6px}
-.deck:disabled{opacity:.5}
-
-.foot{display:flex;gap:8px;margin-top:22px}
-.foot button{flex:1;padding:11px 6px;border-radius:12px;background:var(--card);border:1.5px solid var(--line);font-size:13px;font-weight:500}
-.note{font-size:11px;color:var(--sub);text-align:center;margin-top:14px;line-height:1.7}
-
-/* ---------- study ---------- */
-.sbar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.back{width:38px;height:38px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);font-size:18px;display:grid;place-items:center;flex:none}
-.sbar .t{flex:1;min-width:0}
-.sbar .t b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sbar .t .bar{height:5px;margin-top:5px}
-.sbar .t .bar span{background:var(--ink)}
-.sbar .pos{font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums;flex:none}
-
-.stage{perspective:1400px;margin-top:6px}
-.flip{position:relative;width:100%;min-height:min(58dvh,440px);transform-style:preserve-3d;transition:transform .5s cubic-bezier(.3,.7,.3,1);cursor:pointer}
-.flip.turned{transform:rotateY(180deg)}
-.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:20px;background:var(--card);box-shadow:0 2px 4px rgba(30,34,48,.06),0 14px 36px rgba(30,34,48,.11);padding:22px 22px 18px;display:flex;flex-direction:column}
-.face.backside{transform:rotateY(180deg);
-  background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,#ece6d8 31px,#ece6d8 32px);background-position:0 14px}
-.face .tag{font-size:11px;color:var(--sub);letter-spacing:.05em;display:flex;justify-content:space-between;gap:8px}
-.face .tag .st{padding:1px 8px;border-radius:99px;font-weight:700}
-.st.s0{background:#efebe1;color:var(--sub)} .st.s1{background:var(--mid-soft);color:var(--mid)} .st.s2{background:var(--ok-soft);color:var(--ok)}
-.face .main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:14px 0}
-.q{font-size:21px;font-weight:700;line-height:1.65;letter-spacing:.02em}
-.q.kanji{font-family:"Zen Old Mincho",serif;font-size:40px;text-align:center;letter-spacing:.08em}
-.blank{display:inline-block;min-width:3.2em;border-bottom:2.5px solid var(--red);color:var(--red);text-align:center;margin:0 .15em;line-height:1.2}
-.a{font-size:24px;font-weight:700;color:var(--red);line-height:1.6;letter-spacing:.02em}
-.a.small{font-size:19px}
-.qmini{font-size:13px;color:var(--sub);margin-bottom:12px;line-height:1.6}
-.n{margin-top:12px;font-size:14px;color:#4a4a4a;background:rgba(255,253,248,.85);border-left:3px solid var(--line);padding:4px 10px}
-.hint{text-align:center;font-size:12px;color:var(--sub)}
-.face .meta{display:flex;gap:12px;justify-content:center;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums}
-
-.answers{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:16px}
-.answers button{padding:14px 4px 11px;border-radius:14px;background:var(--card);box-shadow:var(--shadow);font-weight:700;font-size:15px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .08s,opacity .2s}
-.answers button:active{transform:scale(.96)}
-.answers button .ic{font-size:22px;line-height:1}
-.answers button small{font-size:10px;font-weight:400;color:var(--sub)}
-.answers .ng{color:var(--red)} .answers .mid{color:var(--mid)} .answers .ok{color:var(--ok)}
-.answers.locked button{opacity:.35;pointer-events:none}
-.kbd{text-align:center;font-size:11px;color:var(--sub);margin-top:10px}
-@media (hover:none){.kbd{display:none}}
-
-/* ---------- done ---------- */
-.done{text-align:center;padding-top:30px}
-.done h2{font-family:"Zen Old Mincho",serif;font-size:28px;margin:0 0 6px}
-.done .score{display:flex;justify-content:center;gap:12px;margin:24px 0}
-.done .score div{background:var(--card);box-shadow:var(--shadow);border-radius:14px;padding:12px 6px;min-width:90px}
-.done .score b{display:block;font-size:28px}
-.done .score span{font-size:12px;color:var(--sub)}
-.btn{display:block;width:100%;padding:14px;border-radius:14px;font-weight:700;margin-top:10px;background:var(--card);box-shadow:var(--shadow)}
-.btn.primary{background:var(--red);color:#fff}
-
-/* ---------- stats ---------- */
-.stats h2{font-family:"Zen Old Mincho",serif;font-size:22px;margin:0}
-select{font:inherit;font-size:14px;padding:9px 10px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);width:100%;color:var(--ink)}
-.list{margin-top:12px;display:grid;gap:8px}
-.item{background:var(--card);border-radius:12px;padding:10px 12px;box-shadow:0 1px 2px rgba(0,0,0,.05);display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
-.item .st{font-size:11px;padding:2px 7px;border-radius:99px;font-weight:700;white-space:nowrap}
-.item .qq{font-size:13px;line-height:1.45}
-.item .aa{font-size:13px;color:var(--red);font-weight:700;margin-top:2px}
-.item .cc{font-size:12px;text-align:right;color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.5}
-.item .cc .w{color:var(--red);font-weight:700}
-
-/* ---------- dialog ---------- */
-dialog{border:none;border-radius:18px;padding:20px;max-width:min(92vw,460px);width:100%;background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.25)}
-dialog::backdrop{background:rgba(30,34,48,.35)}
-dialog h3{margin:0 0 6px;font-size:18px}
-dialog p{font-size:13px;color:var(--sub);margin:0 0 10px}
-textarea{width:100%;min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:12px;border:1.5px solid var(--line);border-radius:10px;padding:8px;background:#fff;color:var(--ink)}
-.drow{display:flex;gap:8px;margin-top:10px}
-.drow button{flex:1;padding:11px;border-radius:12px;font-weight:700;background:#efebe1}
-.drow .go{background:var(--ink);color:#fff}
-.drow .danger{background:var(--red);color:#fff}
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:99px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.subjects{display:grid;gap:14px;margin-top:22px}
+.subj{display:block;text-decoration:none;color:inherit;background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:18px 18px 16px;position:relative;overflow:hidden}
+.subj::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--red)}
+.subj .lab{font-size:12px;color:var(--sub);letter-spacing:.06em}
+.subj .t{font-family:"Zen Old Mincho",serif;font-size:24px;font-weight:700;margin:2px 0 4px}
+.subj .d{font-size:13px;color:var(--sub);margin-bottom:12px}
+.subj .row{display:flex;align-items:center;gap:10px}
+.subj .bar{flex:1}
+.subj .cnt{font-size:12px;color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums}
+.subj .go{position:absolute;right:16px;top:18px;font-size:20px;color:var(--sub)}
 </style>
 </head>
 <body>
-
-<!-- ============ HOME ============ -->
-<main id="home" class="wrap">
+<main class="wrap">
   <header class="top">
-    <p>公民 ｜ ノートから作った暗記カード</p>
-    <h1>憲法<em>フラッシュ</em>カード</h1>
+    <p>ノートとプリントから作った暗記カード</p>
+    <h1>教科を<em>えらぶ</em></h1>
   </header>
-
-  <section class="overall">
-    <div class="nums">
-      <div class="big" id="ovKnown">0<small>/ 0 覚えた</small></div>
-      <div class="legend"><span><i style="background:var(--ok)"></i>覚えた</span><span><i style="background:var(--mid)"></i>まだ</span><span><i style="background:var(--new)"></i>未学習</span></div>
-    </div>
-    <div class="bar"><span class="k" id="ovK"></span><span class="m" id="ovM"></span></div>
-  </section>
-
-  <div class="label">出題するカード</div>
-  <div class="seg" id="modeSeg">
-    <button data-mode="all">すべて</button>
-    <button data-mode="todo">覚えてない</button>
-    <button data-mode="wrong">間違えた</button>
-  </div>
-  <div class="toggles">
-    <button class="tog" id="tShuffle"><span class="box"></span>シャッフル</button>
-    <button class="tog" id="tReverse"><span class="box"></span>答え → 問題</button>
-  </div>
-
-  <div class="label">単元</div>
-  <button class="all-btn" id="startAll">全単元まとめて<small id="allCount"></small></button>
-  <div class="decks" id="decks"></div>
-
-  <div class="foot">
-    <button id="openStats">📊 記録を見る</button>
-    <button id="openBackup">💾 バックアップ</button>
-    <button id="openReset">↺ リセット</button>
-  </div>
-  <p class="note">学習記録（覚えた／まだ／間違えた回数）はこの端末のブラウザのクッキーに保存されます。<br>別の端末に移すときは「バックアップ」を使ってください。</p>
+  <div class="subjects" id="subjects"></div>
+  <p class="note">学習記録は教科ごとに、この端末のブラウザのクッキーに保存されます。</p>
 </main>
 
-<!-- ============ STUDY ============ -->
-<main id="study" class="wrap hidden">
-  <div class="sbar">
-    <button class="back" id="quit" aria-label="戻る">←</button>
-    <div class="t"><b id="sTitle"></b><div class="bar"><span id="sProg"></span></div></div>
-    <div class="pos" id="sPos"></div>
-  </div>
-
-  <div class="stage">
-    <div class="flip" id="flip">
-      <div class="face front">
-        <div class="tag"><span id="fDeck"></span><span class="st" id="fSt"></span></div>
-        <div class="main"><div class="q" id="fQ"></div></div>
-        <div class="hint">タップして答えを見る</div>
-      </div>
-      <div class="face backside">
-        <div class="tag"><span id="bDeck"></span><span class="st" id="bSt"></span></div>
-        <div class="main">
-          <div class="qmini" id="bQ"></div>
-          <div class="a" id="bA"></div>
-          <div class="n hidden" id="bN"></div>
-        </div>
-        <div class="meta"><span>✕ 間違えた <b id="bW">0</b>回</span><span>○ 覚えた <b id="bC">0</b>回</span></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="answers locked" id="answers">
-    <button class="ng" data-r="ng"><span class="ic">✕</span>間違えた<small>もう一度出る</small></button>
-    <button class="mid" data-r="mid"><span class="ic">△</span>まだ不安<small>覚えてない</small></button>
-    <button class="ok" data-r="ok"><span class="ic">○</span>覚えた<small>完璧！</small></button>
-  </div>
-  <div class="kbd">スペース：めくる ／ 1：間違えた ／ 2：まだ不安 ／ 3：覚えた</div>
-</main>
-
-<!-- ============ DONE ============ -->
-<main id="done" class="wrap hidden">
-  <div class="done">
-    <h2>おつかれさま！</h2>
-    <p id="dSub" style="color:var(--sub);margin:0"></p>
-    <div class="score">
-      <div><b style="color:var(--ok)" id="dOk">0</b><span>○ 覚えた</span></div>
-      <div><b style="color:var(--mid)" id="dMid">0</b><span>△ まだ不安</span></div>
-      <div><b style="color:var(--red)" id="dNg">0</b><span>✕ 間違えた</span></div>
-    </div>
-    <button class="btn primary" id="retry">△と✕のカードをもう一度</button>
-    <button class="btn" id="toHome">単元一覧へ戻る</button>
-  </div>
-</main>
-
-<!-- ============ STATS ============ -->
-<main id="stats" class="wrap hidden">
-  <div class="sbar">
-    <button class="back" id="statsBack" aria-label="戻る">←</button>
-    <div class="t stats"><h2>学習記録</h2></div>
-  </div>
-  <div style="display:flex;gap:8px">
-    <select id="fDeckSel"></select>
-    <select id="fSort">
-      <option value="wrong">間違いが多い順</option>
-      <option value="status">覚えてない順</option>
-      <option value="order">ノート順</option>
-    </select>
-  </div>
-  <div class="list" id="list"></div>
-</main>
-
-<!-- dialogs -->
-<dialog id="dlgBackup">
-  <h3>バックアップ</h3>
-  <p>下のコードをコピーして保存しておくと、別の端末やブラウザで記録を復元できます。</p>
-  <textarea id="exportBox" readonly></textarea>
-  <div class="drow"><button id="copyBtn" class="go">コピー</button></div>
-  <p style="margin-top:16px">復元するときは、コードを貼り付けて「復元」を押してください。</p>
-  <textarea id="importBox" placeholder="ここにバックアップコードを貼り付け"></textarea>
-  <div class="drow"><button id="closeBackup">閉じる</button><button id="importBtn" class="go">復元</button></div>
-</dialog>
-<dialog id="dlgReset">
-  <h3>記録をリセット</h3>
-  <p>すべてのカードの「覚えた／まだ／間違えた回数」を消去します。元に戻せません。</p>
-  <div class="drow"><button id="cancelReset">やめる</button><button id="doReset" class="danger">リセット</button></div>
-</dialog>
-<div class="toast" id="toast"></div>
-
-<script src="cards.js"></script>
+<script src="data/kenpo.js"></script>
+<script src="data/edo.js"></script>
 <script>
 "use strict";
-/* =========================================================
-   保存（クッキー）
-   1カード = "id-状態-覚えた回数-間違えた回数"   状態 0未学習 1まだ 2覚えた
-   4KB制限に備えて kenpo_p0, kenpo_p1 ... に分割して保存
-   ========================================================= */
-const COOKIE_PREFIX = "kenpo_p";
-const SET_COOKIE = "kenpo_set";
-const MAX_AGE = 60 * 60 * 24 * 400; // 約400日（ブラウザ上限）
-const CHUNK = 3000;
-
-function setCookie(name, value, maxAge = MAX_AGE) {
-  document.cookie = `${name}=${value}; max-age=${maxAge}; path=/; SameSite=Lax` + (location.protocol === "https:" ? "; Secure" : "");
-}
+const ORDER = ["kenpo", "edo"];
+const DESC = {
+  kenpo: "大日本帝国憲法／日本国憲法の制定・基本原理／前文の穴埋め",
+  edo: "幕府の開設〜天保の改革（プリント第16〜21回）",
+};
 function getCookie(name) {
   const m = document.cookie.split("; ").find(c => c.startsWith(name + "="));
   return m ? m.slice(name.length + 1) : null;
 }
-
-const byId = Object.fromEntries(CARDS.map(c => [c.id, c]));
-let P = {}; // id -> {s, c, w}
-
-function serialize() {
-  return Object.entries(P)
-    .filter(([id, v]) => byId[id] && (v.s || v.c || v.w))
-    .map(([id, v]) => `${id}-${v.s}-${v.c}-${v.w}`).join(".");
-}
-function parse(str) {
-  const out = {};
-  if (!str) return out;
-  for (const part of str.split(".")) {
-    const [id, s, c, w] = part.split("-");
-    if (!byId[id]) continue;
-    out[id] = { s: +s || 0, c: +c || 0, w: +w || 0 };
-  }
-  return out;
-}
-function loadProgress() {
+function knownMap(key) {
   let s = "", i = 0, v;
-  while ((v = getCookie(COOKIE_PREFIX + i)) !== null) { s += v; i++; }
-  if (!s) { try { s = localStorage.getItem("kenpo_progress") || ""; } catch (e) {} }
-  P = parse(s);
+  while ((v = getCookie(key + "_p" + i)) !== null) { s += v; i++; }
+  if (!s) { try { s = localStorage.getItem(key + "_progress") || ""; } catch (e) {} }
+  const m = {};
+  for (const part of s.split(".")) { const [id, st] = part.split("-"); if (id) m[id] = +st || 0; }
+  return m;
 }
-function saveProgress() {
-  const s = serialize();
-  let i = 0;
-  for (let p = 0; p < s.length; p += CHUNK, i++) setCookie(COOKIE_PREFIX + i, s.slice(p, p + CHUNK));
-  if (!s.length) i = 0;
-  while (getCookie(COOKIE_PREFIX + i) !== null) { setCookie(COOKIE_PREFIX + i, "", 0); i++; }
-  try { localStorage.setItem("kenpo_progress", s); } catch (e) {} // 予備
+const box = document.getElementById("subjects");
+for (const key of ORDER) {
+  const S = window.SUBJECTS[key]; if (!S) continue;
+  const m = knownMap(key);
+  let k = 0, mid = 0;
+  for (const c of S.cards) { if (m[c.id] === 2) k++; else if (m[c.id] === 1) mid++; }
+  const n = S.cards.length;
+  const a = document.createElement("a");
+  a.className = "subj"; a.href = key + "/";
+  a.innerHTML = `<div class="lab">${S.name}</div><div class="t">${S.short}</div>
+    <div class="d">${DESC[key] || ""}・${n}枚</div>
+    <div class="row"><div class="bar"><span class="k" style="width:${k / n * 100}%"></span><span class="m" style="width:${mid / n * 100}%"></span></div>
+    <div class="cnt">${k}/${n} 覚えた</div></div><span class="go">›</span>`;
+  box.appendChild(a);
 }
-const prog = id => P[id] || { s: 0, c: 0, w: 0 };
-
-let S = { mode: "all", shuffle: true, reverse: false };
-function loadSettings() {
-  const v = getCookie(SET_COOKIE);
-  if (!v) return;
-  const [m, sh, rv] = v.split("-");
-  if (["all", "todo", "wrong"].includes(m)) S.mode = m;
-  S.shuffle = sh === "1"; S.reverse = rv === "1";
-}
-function saveSettings() { setCookie(SET_COOKIE, `${S.mode}-${S.shuffle ? 1 : 0}-${S.reverse ? 1 : 0}`); }
-
-/* ========================================================= */
-const $ = id => document.getElementById(id);
-const deckOf = id => DECKS.find(d => d.id === id);
-const ST_LABEL = ["未学習", "まだ", "覚えた"];
-function show(screen) {
-  for (const s of ["home", "study", "done", "stats"]) $(s).classList.toggle("hidden", s !== screen);
-  window.scrollTo(0, 0);
-}
-function toast(msg) {
-  const t = $("toast"); t.textContent = msg; t.classList.add("show");
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 1800);
-}
-function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
-function fmtQ(q) { return esc(q).replace(/〔〕/g, '<span class="blank">？</span>'); }
-
-function counts(cards) {
-  let k = 0, m = 0;
-  for (const c of cards) { const s = prog(c.id).s; if (s === 2) k++; else if (s === 1) m++; }
-  return { k, m, n: cards.length };
-}
-function setBar(kEl, mEl, r) {
-  kEl.style.width = (r.k / r.n * 100) + "%";
-  mEl.style.width = (r.m / r.n * 100) + "%";
-}
-function filterCards(cards) {
-  if (S.mode === "todo") return cards.filter(c => prog(c.id).s !== 2);
-  if (S.mode === "wrong") return cards.filter(c => prog(c.id).w > 0);
-  return cards;
-}
-
-/* ---------- HOME ---------- */
-function renderHome() {
-  const all = counts(CARDS);
-  $("ovKnown").innerHTML = `${all.k}<small>/ ${all.n} 覚えた</small>`;
-  setBar($("ovK"), $("ovM"), all);
-  document.querySelectorAll("#modeSeg button").forEach(b => b.classList.toggle("on", b.dataset.mode === S.mode));
-  $("tShuffle").classList.toggle("on", S.shuffle);
-  $("tReverse").classList.toggle("on", S.reverse);
-
-  const allN = filterCards(CARDS).length;
-  $("allCount").textContent = `${allN}枚`;
-  $("startAll").disabled = !allN;
-  $("startAll").style.opacity = allN ? 1 : .5;
-
-  const box = $("decks"); box.innerHTML = "";
-  for (const d of DECKS) {
-    const cards = CARDS.filter(c => c.d === d.id);
-    const r = counts(cards), n = filterCards(cards).length;
-    const b = document.createElement("button");
-    b.className = "deck"; b.disabled = !n;
-    b.innerHTML = `<div class="sub">${esc(d.sub)}</div><div class="name">${esc(d.name)}</div>
-      <div class="row"><div class="bar"><span class="k" style="width:${r.k / r.n * 100}%"></span><span class="m" style="width:${r.m / r.n * 100}%"></span></div>
-      <div class="cnt">${r.k}/${r.n}${S.mode !== "all" ? `・出題${n}` : ""}</div></div>
-      ${!n ? `<div class="empty">${S.mode === "todo" ? "全部覚えた！" : "間違えたカードなし"}</div>` : ""}`;
-    b.onclick = () => startSession(cards, d.name);
-    box.appendChild(b);
-  }
-}
-document.querySelectorAll("#modeSeg button").forEach(b => b.onclick = () => { S.mode = b.dataset.mode; saveSettings(); renderHome(); });
-$("tShuffle").onclick = () => { S.shuffle = !S.shuffle; saveSettings(); renderHome(); };
-$("tReverse").onclick = () => { S.reverse = !S.reverse; saveSettings(); renderHome(); };
-$("startAll").onclick = () => startSession(CARDS, "全単元");
-
-/* ---------- STUDY ---------- */
-let Q = [], qi = 0, title = "", tally = {}, flipped = false, again = [];
-function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
-
-function startSession(cards, name, raw = false) {
-  let list = raw ? cards.slice() : filterCards(cards).slice();
-  if (!list.length) return toast("出題するカードがありません");
-  if (S.mode === "wrong" && !raw) list.sort((a, b) => prog(b.id).w - prog(a.id).w);
-  if (S.shuffle) shuffle(list);
-  Q = list; qi = 0; title = name; tally = { ok: 0, mid: 0, ng: 0 }; again = [];
-  show("study"); renderCard();
-}
-function renderCard() {
-  const c = Q[qi], p = prog(c.id), d = deckOf(c.d);
-  flipped = false;
-  const fl = $("flip");
-  fl.style.transition = "none"; fl.classList.remove("turned"); void fl.offsetWidth; fl.style.transition = "";
-  $("answers").classList.add("locked");
-
-  $("sTitle").textContent = title;
-  $("sPos").textContent = `${qi + 1} / ${Q.length}`;
-  $("sProg").style.width = (qi / Q.length * 100) + "%";
-  for (const k of ["f", "b"]) {
-    $(k + "Deck").textContent = d.name;
-    const st = $(k + "St"); st.className = "st s" + p.s; st.textContent = ST_LABEL[p.s];
-  }
-  const isKanji = c.d === "h";
-  const front = S.reverse ? esc(c.a) : fmtQ(c.q);
-  const back = S.reverse ? fmtQ(c.q) : esc(c.a);
-  const fq = $("fQ");
-  fq.innerHTML = front;
-  fq.className = "q" + (isKanji && !S.reverse ? " kanji" : "");
-  $("bQ").innerHTML = S.reverse ? esc(c.a) : fmtQ(c.q);
-  const ba = $("bA");
-  ba.innerHTML = back;
-  ba.className = "a" + ((S.reverse ? c.q : c.a).length > 22 ? " small" : "");
-  $("bN").textContent = c.n || "";
-  $("bN").classList.toggle("hidden", !c.n);
-  $("bW").textContent = p.w; $("bC").textContent = p.c;
-}
-function flip() {
-  flipped = !flipped;
-  $("flip").classList.toggle("turned", flipped);
-  if (flipped) $("answers").classList.remove("locked");
-}
-$("flip").onclick = flip;
-
-function answer(r) {
-  if (!flipped) return;
-  const c = Q[qi], p = { ...prog(c.id) };
-  if (r === "ok") { p.s = 2; p.c++; }
-  else if (r === "mid") { p.s = 1; }
-  else { p.s = 1; p.w++; }
-  P[c.id] = p; saveProgress();
-  tally[r]++;
-  if (r !== "ok") again.push(c);
-  if (r === "ng" && Q.length - qi > 1) Q.push(c); // 間違えたら最後にもう一度
-  qi++;
-  if (qi >= Q.length) finish(); else renderCard();
-}
-document.querySelectorAll("#answers button").forEach(b => b.onclick = e => { e.stopPropagation(); answer(b.dataset.r); });
-
-function finish() {
-  $("sProg").style.width = "100%";
-  $("dOk").textContent = tally.ok; $("dMid").textContent = tally.mid; $("dNg").textContent = tally.ng;
-  $("dSub").textContent = `${title}・${tally.ok + tally.mid + tally.ng}回回答`;
-  const uniq = [...new Map(again.map(c => [c.id, c])).values()].filter(c => prog(c.id).s !== 2);
-  $("retry").classList.toggle("hidden", !uniq.length);
-  $("retry").textContent = `△と✕のカードをもう一度（${uniq.length}枚）`;
-  $("retry").onclick = () => startSession(uniq, title + "（復習）", true);
-  show("done");
-}
-$("quit").onclick = () => { renderHome(); show("home"); };
-$("toHome").onclick = () => { renderHome(); show("home"); };
-
-document.addEventListener("keydown", e => {
-  if ($("study").classList.contains("hidden")) return;
-  if (e.key === " " || e.key === "Enter") { e.preventDefault(); flip(); }
-  else if (e.key === "1") answer("ng");
-  else if (e.key === "2") answer("mid");
-  else if (e.key === "3") answer("ok");
-  else if (e.key === "Escape") { renderHome(); show("home"); }
-});
-
-/* ---------- STATS ---------- */
-function renderStats() {
-  const dsel = $("fDeckSel").value, sort = $("fSort").value;
-  let list = CARDS.filter(c => dsel === "all" || c.d === dsel);
-  const order = new Map(CARDS.map((c, i) => [c.id, i]));
-  if (sort === "wrong") list.sort((a, b) => prog(b.id).w - prog(a.id).w || order.get(a.id) - order.get(b.id));
-  if (sort === "status") list.sort((a, b) => ((prog(a.id).s + 2) % 3) - ((prog(b.id).s + 2) % 3) || prog(b.id).w - prog(a.id).w);
-  $("list").innerHTML = list.map(c => {
-    const p = prog(c.id);
-    return `<div class="item"><span class="st s${p.s}">${ST_LABEL[p.s]}</span>
-      <div><div class="qq">${fmtQ(c.q)}</div><div class="aa">${esc(c.a)}</div></div>
-      <div class="cc"><span class="w">✕${p.w}</span><br>○${p.c}</div></div>`;
-  }).join("");
-}
-$("fDeckSel").innerHTML = `<option value="all">全単元</option>` + DECKS.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join("");
-$("fDeckSel").onchange = renderStats; $("fSort").onchange = renderStats;
-$("openStats").onclick = () => { renderStats(); show("stats"); };
-$("statsBack").onclick = () => { renderHome(); show("home"); };
-
-/* ---------- BACKUP / RESET ---------- */
-$("openBackup").onclick = () => { $("exportBox").value = "KENPO1:" + (serialize() || "(記録なし)"); $("importBox").value = ""; $("dlgBackup").showModal(); };
-$("closeBackup").onclick = () => $("dlgBackup").close();
-$("copyBtn").onclick = async () => {
-  try { await navigator.clipboard.writeText($("exportBox").value); toast("コピーしました"); }
-  catch (e) { $("exportBox").select(); document.execCommand("copy"); toast("コピーしました"); }
-};
-$("importBtn").onclick = () => {
-  const v = $("importBox").value.trim().replace(/^KENPO1:/, "");
-  const data = parse(v);
-  if (!Object.keys(data).length) return toast("コードが読み取れませんでした");
-  P = data; saveProgress(); $("dlgBackup").close(); renderHome(); toast(`${Object.keys(data).length}枚分の記録を復元しました`);
-};
-$("openReset").onclick = () => $("dlgReset").showModal();
-$("cancelReset").onclick = () => $("dlgReset").close();
-$("doReset").onclick = () => { P = {}; saveProgress(); $("dlgReset").close(); renderHome(); toast("記録をリセットしました"); };
-
-/* ---------- init ---------- */
-loadProgress(); loadSettings(); renderHome();
 </script>
 </body>
 </html>
